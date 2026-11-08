@@ -8,14 +8,18 @@
 #   scons mode=release         -> optimized
 #   scons -c                   -> clean
 #
+# Linux builds also write compile_commands.json at the project root (used by
+# clangd for include paths/defines; only Linux commands are recorded).
+#
 # Output:
 #   build/linux/<app>          (ELF, runs inside the container via WSLg)
 #   build/windows/<app>.exe    (self-contained PE, runs on Windows outside the container)
 #
-# Dependencies (provided by the devcontainer):
-#   GLFW  -> built from source in /opt/glfw (Linux installed into /usr/local; Windows
-#            in /opt/glfw/build-windows/src/libglfw3.a)
-#   GLEW  -> Linux: libglew-dev package; Windows: /opt/glew source (glew.c compiled in)
+# Dependencies (static, copied into the project by the devcontainer):
+#   dependencies/linux/{include,lib}    -> libglfw3.a, libGLEW.a
+#   dependencies/windows/{include,lib}  -> libglfw3.a, libglew32.a
+# Only the OS-provided OpenGL/system libraries stay dynamic (libGL/libc on Linux,
+# opengl32/gdi32 on Windows).
 # =============================================================================
 import os
 
@@ -40,10 +44,10 @@ else:
     common_cxxflags = ["-O2", "-DNDEBUG"]
 common_cxxflags += ["-std=c++17", "-Wall", "-Wextra"]
 
-# Dependency paths inside the container
-GLFW_INCLUDE = "/opt/glfw/src/include"
-GLFW_WIN_LIBDIR = "/opt/glfw/build-windows/src"
-GLEW_DIR = "/opt/glew"
+# Dependency paths (inside the project)
+DEPS_DIR = Dir("#dependencies").abspath
+DEPS_LINUX = os.path.join(DEPS_DIR, "linux")
+DEPS_WINDOWS = os.path.join(DEPS_DIR, "windows")
 
 # =============================================================================
 # Linux environment (native g++)
@@ -54,14 +58,25 @@ if build_linux:
         ENV=os.environ,
         CXX="g++",
         CXXFLAGS=common_cxxflags,
-        CPPPATH=[GLFW_INCLUDE],
+        CPPDEFINES=["GLEW_STATIC"],
+        CPPPATH=[os.path.join(DEPS_LINUX, "include")],
+        LIBPATH=[os.path.join(DEPS_LINUX, "lib")],
+        # Full paths to the archives: guarantees the static .a is used even if a
+        # system .so with the same name exists. GLFW loads X11/Wayland via dlopen.
+        LIBS=[
+            File(os.path.join(DEPS_LINUX, "lib", "libglfw3.a")),
+            File(os.path.join(DEPS_LINUX, "lib", "libGLEW.a")),
+            "GL", "rt", "m", "dl", "pthread",
+        ],
     )
-    # GLFW installed in /usr/local + GLEW/GL via pkg-config (static GLFW linking
-    # pulls its private deps: X11/Wayland/dl/pthread).
-    env_linux.ParseConfig("pkg-config --static --cflags --libs glfw3 glew gl")
-    env_linux.Append(LIBS=["dl", "pthread", "m"])
     env_linux["PLATFORM_NAME"] = "linux"
     env_linux["BIN_SUFFIX"] = ""
+
+    # Compilation database for clangd. The tool is loaded only in the Linux env,
+    # so MinGW commands never end up in it.
+    env_linux["COMPILATIONDB_USE_ABSPATH"] = True
+    env_linux.Tool("compilation_db")
+    env_linux.CompilationDatabase("#compile_commands.json")
 
 # =============================================================================
 # Windows environment (MinGW-w64 cross-compile)
@@ -74,18 +89,16 @@ if build_windows:
         CXX="x86_64-w64-mingw32-g++",
         LINK="x86_64-w64-mingw32-g++",
         CXXFLAGS=common_cxxflags,
-        # GLEW_STATIC: glew.c compiled into the app (no GLEW DLL).
+        # GLEW_STATIC: static libglew32.a (no GLEW DLL).
         CPPDEFINES=["GLEW_STATIC"],
-        CPPPATH=[GLFW_INCLUDE, os.path.join(GLEW_DIR, "include")],
-        LIBPATH=[GLFW_WIN_LIBDIR],
+        CPPPATH=[os.path.join(DEPS_WINDOWS, "include")],
+        LIBPATH=[os.path.join(DEPS_WINDOWS, "lib")],
         # Self-contained .exe (no dependency on the GCC runtime DLLs).
         LINKFLAGS=["-static", "-static-libgcc", "-static-libstdc++"],
-        # Order matters on MinGW: glfw3 -> opengl32/gdi32.
-        LIBS=["glfw3", "opengl32", "gdi32"],
+        # Order matters on MinGW: glfw3/glew32 -> opengl32/gdi32.
+        LIBS=["glfw3", "glew32", "opengl32", "gdi32"],
         PROGSUFFIX=".exe",
     )
-    # GLEW amalgamated source compiled in (as C).
-    env_windows["GLEW_C"] = os.path.join(GLEW_DIR, "src", "glew.c")
     env_windows["PLATFORM_NAME"] = "windows"
     env_windows["BIN_SUFFIX"] = ".exe"
 
@@ -94,3 +107,4 @@ if build_windows:
 # =============================================================================
 Export("env_linux", "env_windows", "build_linux", "build_windows")
 SConscript("helloworld/SConscript")
+SConscript("src/SConscript")

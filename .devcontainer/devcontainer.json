@@ -50,6 +50,10 @@
     "LD_LIBRARY_PATH": "/usr/lib/wsl/lib"
   },
 
+  // /workspace only exists at runtime (bind mount), so the static libs staged in
+  // the image (/opt/dependencies) are copied into the project after creation.
+  "postCreateCommand": "rm -rf /workspace/dependencies/linux /workspace/dependencies/windows && mkdir -p /workspace/dependencies && cp -a /opt/dependencies/. /workspace/dependencies/",
+
   "customizations": {
     "vscode": {
       "extensions": [

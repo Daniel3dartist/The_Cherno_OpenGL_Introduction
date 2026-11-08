@@ -1,0 +1,32 @@
+# =============================================================================
+# src - main application. Every .cpp in this folder is compiled into one binary.
+# Produces build/linux/app and build/windows/app.exe.
+# =============================================================================
+import os
+
+Import("env_linux", "env_windows", "build_linux", "build_windows")
+
+APP = "app"
+sources = Glob("*.cpp")
+
+
+def objects(env, platform):
+    # Per-platform object dirs (Linux and Windows compile the same sources).
+    return [
+        env.Object(
+            target="#build/%s/obj/%s/%s.o" % (platform, APP, os.path.splitext(src.name)[0]),
+            source=src,
+        )
+        for src in sources
+    ]
+
+
+# --- Linux -------------------------------------------------------------------
+if build_linux and env_linux is not None:
+    e = env_linux.Clone()
+    e.Program(target="#build/linux/%s" % APP, source=objects(e, "linux"))
+
+# --- Windows (cross-compile) -------------------------------------------------
+if build_windows and env_windows is not None:
+    e = env_windows.Clone()
+    e.Program(target="#build/windows/%s" % APP, source=objects(e, "windows"))  # .exe via PROGSUFFIX

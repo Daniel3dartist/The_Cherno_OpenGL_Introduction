@@ -43,6 +43,13 @@ build/
 Build/
 build-*/
 
+# Temporary GLFW clone at the repo root (local verification; the real build is in /opt/glfw in the container)
+/glfw/
+
+# SCons
+.sconsign.dblite
+.sconf_temp/
+
 # CMake generated files
 CMakeFiles/
 CMakeCache.txt

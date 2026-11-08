@@ -1,12 +1,13 @@
 {
   // OpenGL (GLFW + GLEW) development devcontainer on Debian 13 (trixie).
-  // Runtime: Podman inside WSL2. Host GPU via /dev/dxg + WSLg. User: root.
-  "name": "opengl-glfw-dev",
+  // HOST: Windows 11 + WSL2. Runtime: Podman inside WSL2. GPU via /dev/dxg + WSLg.
+  // For a native Linux host use ../linux/devcontainer.json (same Dockerfile).
+  "name": "OpenGL dev (Windows / WSL)",
 
   // build.args make it easy to swap GLFW for a fork without editing the Dockerfile.
   "build": {
-    "dockerfile": "Dockerfile",
-    "context": "..",
+    "dockerfile": "../Dockerfile",
+    "context": "../..",
     "args": {
       "GLFW_REPO": "https://github.com/glfw/glfw.git",
       "GLFW_REF": "master"
@@ -41,8 +42,10 @@
     "source=${localEnv:USERPROFILE}/.ssh/devcontainer-keys,target=/root/.ssh/,type=bind"
   ],
 
-  // Display (WSLg) + path to the WSL GPU libs.
+  // Display (WSLg) + path to the WSL GPU libs. GALLIUM_DRIVER makes Mesa use the
+  // d3d12 driver (host GPU) instead of falling back to llvmpipe (software).
   "containerEnv": {
+    "GALLIUM_DRIVER": "d3d12",
     "DISPLAY": ":0",
     "WAYLAND_DISPLAY": "wayland-0",
     "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",

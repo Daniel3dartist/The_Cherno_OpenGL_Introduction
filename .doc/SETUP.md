@@ -33,12 +33,19 @@ In the VS Code *Settings* (WSL / Remote side), set:
 
 1. Clone the project on Windows (e.g. `C:\Users\<you>\Documents\projects\The_Cherno_OpenGL_Introduction`).
 2. Open the folder in VS Code.
-3. `F1` → **Dev Containers: Reopen in Container**.
+3. `F1` → **Dev Containers: Reopen in Container** and pick the configuration for your host:
+   - **OpenGL dev (Windows / WSL)** → [.devcontainer/wsl/devcontainer.json](../.devcontainer/wsl/devcontainer.json)
+   - **OpenGL dev (Linux)** → [.devcontainer/linux/devcontainer.json](../.devcontainer/linux/devcontainer.json)
+     (run `xhost +local:` on the host once; see the comments in that file for
+     rootless Podman, SELinux and NVIDIA proprietary drivers)
+
+   Both share the same [Dockerfile](../.devcontainer/Dockerfile); only the host
+   integration (GPU device, display sockets, env vars) differs.
 4. The first creation **builds GLFW from source** (Linux + Windows) — it takes a while,
    but becomes a cached layer; recreations reuse it.
 
 ### Workspace bind
-The [devcontainer.json](../.devcontainer/devcontainer.json) mounts the local workspace
+The [devcontainer.json](../.devcontainer/wsl/devcontainer.json) mounts the local workspace
 folder into `/workspace`:
 
 ```jsonc
@@ -70,7 +77,7 @@ glxgears        # should open a window with gears on your Windows desktop
 ```
 
 If you see `llvmpipe`: `/dev/dxg`, the `/usr/lib/wsl` mount, or `LD_LIBRARY_PATH` is
-missing — check the [devcontainer.json](../.devcontainer/devcontainer.json).
+missing — check the [devcontainer.json](../.devcontainer/wsl/devcontainer.json).
 If no window opens: check `DISPLAY=:0` and the WSLg mounts.
 
 ---
@@ -109,7 +116,7 @@ scons target=linux
 
 ## 6. Use a custom GLFW fork
 The container clones GLFW at creation time. To point it at your fork, edit the `build.args`
-in [devcontainer.json](../.devcontainer/devcontainer.json) and rebuild the container:
+in [devcontainer.json](../.devcontainer/wsl/devcontainer.json) and rebuild the container:
 
 ```jsonc
 "args": {

@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential g++ gdb pkg-config scons git cmake ca-certificates curl unzip \
     # OpenGL headers/loader (Linux). GLFW and GLEW are NOT from apt: both are built
     # from source below as static libraries.
-    libgl1-mesa-dev \
+    libgl1-mesa-dev libglu1-mesa-dev \
     # Dependencies to build GLFW from source (X11 + Wayland backends)
     libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev \
     libxkbcommon-dev libwayland-dev wayland-protocols extra-cmake-modules \

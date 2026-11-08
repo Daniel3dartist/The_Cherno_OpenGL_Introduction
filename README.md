@@ -34,6 +34,28 @@ natively, outside the container).
 - **Podman** installed inside WSL2.
 - **VS Code** + the **Dev Containers** extension (set `"dev.containers.dockerPath": "podman"`).
 
+### Which devcontainer to pick
+
+When you run **Dev Containers: Reopen in Container**, VS Code asks you to choose between two
+configurations. Pick the one that matches **the machine you are sitting at**, not the
+container (the container is the same Debian 13 image in both cases):
+
+| Your computer runs… | Pick | Why |
+|---|---|---|
+| **Windows 11** (project opened through WSL2) | **OpenGL dev (Windows / WSL)** | Gets the GPU through WSL (`/dev/dxg` + Mesa `d3d12`) and shows the window on your Windows desktop via WSLg. |
+| **Linux** directly (Ubuntu, Fedora, Arch… with a desktop) | **OpenGL dev (Linux)** | Gets the GPU through `/dev/dri` (Mesa picks the native driver) and shows the window on your own X11/XWayland session. |
+
+**Why two options?** The Dockerfile, the compilers, and the build are identical. What
+changes is how the container reaches the **GPU** and the **screen**, and that depends on
+the host: Windows exposes them through WSL-specific devices and sockets that don't exist
+on a regular Linux machine, and vice versa. Picking the wrong one usually means the
+container fails to start (missing `/dev/dxg` or `/mnt/wslg`) or OpenGL falls back to
+software rendering (`llvmpipe`) with no window.
+
+> Not sure? If you installed WSL and Podman following the list above, you want
+> **Windows / WSL**. The Linux option needs one extra host step (`xhost +local:`) — see
+> [.doc/SETUP.md](.doc/SETUP.md#2-open-in-the-devcontainer).
+
 ### Build (summary)
 
 ```bash

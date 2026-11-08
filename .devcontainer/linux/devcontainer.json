@@ -1,0 +1,68 @@
+{
+  // OpenGL (GLFW + GLEW) development devcontainer on Debian 13 (trixie).
+  // HOST: native Linux (X11 or Wayland desktop with XWayland). Docker or Podman.
+  // GPU via /dev/dri (Mesa picks the native driver: radeonsi, iris, nouveau...).
+  // For Windows + WSL2 use ../wsl/devcontainer.json (same Dockerfile).
+  //
+  // One-time host setup:
+  //   xhost +local:        # let local containers connect to your X server
+  // Rootless Podman: the host user must be in the `video`/`render` groups, and
+  // add "--group-add=keep-groups" to runArgs (Podman-only flag, breaks Docker).
+  // SELinux hosts (Fedora/RHEL): add "--security-opt=label=disable" to runArgs.
+  // NVIDIA proprietary driver: /dev/dri is not enough, install the NVIDIA
+  // Container Toolkit and add "--device=nvidia.com/gpu=all" (Podman/CDI) or
+  // "--gpus=all" (Docker) to runArgs.
+  "name": "OpenGL dev (Linux)",
+
+  // build.args make it easy to swap GLFW for a fork without editing the Dockerfile.
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": "../..",
+    "args": {
+      "GLFW_REPO": "https://github.com/glfw/glfw.git",
+      "GLFW_REF": "master"
+    }
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:1": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "upgradePackages": true
+    }
+  },
+  // Container user = root (project requirement).
+  "remoteUser": "root",
+  "containerUser": "root",
+
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+
+  // Host GPU through the DRM render nodes.
+  "runArgs": [
+    "--device=/dev/dri"
+  ],
+
+  // Host X11 socket (display) + SSH keys.
+  "mounts": [
+    "source=/tmp/.X11-unix,target=/tmp/.X11-unix,type=bind",
+    "source=${localEnv:HOME}/.ssh/devcontainer-keys,target=/root/.ssh/,type=bind"
+  ],
+
+  // Same display as the host session. No GALLIUM_DRIVER: Mesa auto-detects.
+  "containerEnv": {
+    "DISPLAY": "${localEnv:DISPLAY}"
+  },
+
+  // /workspace only exists at runtime (bind mount), so the static libs staged in
+  // the image (/opt/dependencies) are copied into the project after creation.
+  "postCreateCommand": "rm -rf /workspace/dependencies/linux /workspace/dependencies/windows && mkdir -p /workspace/dependencies && cp -a /opt/dependencies/. /workspace/dependencies/",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "llvm-vs-code-extensions.vscode-clangd"
+      ]
+    }
+  }
+}

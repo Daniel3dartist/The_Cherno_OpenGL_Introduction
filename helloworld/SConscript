@@ -1,0 +1,29 @@
+# =============================================================================
+# helloworld - triangulo (hello world do OpenGL). Teste de setup + stream de tela.
+# Gera build/linux/helloworld e build/windows/helloworld.exe.
+# =============================================================================
+Import("env_linux", "env_windows", "build_linux", "build_windows")
+
+APP = "helloworld"
+src = "main.cpp"
+
+# --- Linux -------------------------------------------------------------------
+if build_linux and env_linux is not None:
+    e = env_linux.Clone()
+    e.Program(
+        target="#build/linux/%s" % APP,
+        source=[src],
+    )
+
+# --- Windows (cross-compile) -------------------------------------------------
+if build_windows and env_windows is not None:
+    e = env_windows.Clone()
+    # Compila o app + o fonte amalgamado do GLEW (glew.c) no mesmo binario.
+    glew_obj = e.Object(
+        target="#build/windows/glew.o",
+        source=e["GLEW_C"],
+    )
+    e.Program(
+        target="#build/windows/%s" % APP,  # PROGSUFFIX acrescenta .exe
+        source=[src, glew_obj],
+    )

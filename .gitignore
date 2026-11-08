@@ -43,6 +43,13 @@ build/
 Build/
 build-*/
 
+# Clone temporario do GLFW na raiz (verificacao local; o build real e em /opt/glfw no container)
+/glfw/
+
+# SCons
+.sconsign.dblite
+.sconf_temp/
+
 # CMake generated files
 CMakeFiles/
 CMakeCache.txt

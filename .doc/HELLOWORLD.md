@@ -1,61 +1,61 @@
-# Hello World — teste do setup e do stream de tela
+# Hello World — setup and screen-stream test
 
-O diretório [`helloworld/`](../helloworld/) contém o "hello world" do OpenGL: um
-**triângulo colorido**. Ele serve para validar, de ponta a ponta:
+The [`helloworld/`](../helloworld/) directory contains the OpenGL "hello world": a
+**colored triangle**. It validates, end to end:
 
-1. o **build** (Linux nativo e Windows cross-compile);
-2. a **GPU acelerada** do host dentro do container;
-3. o **stream de tela** do container para o desktop do Windows (WSLg).
+1. the **build** (native Linux and Windows cross-compile);
+2. the **GPU acceleration** of the host inside the container;
+3. the **screen stream** from the container to the Windows desktop (WSLg).
 
-Arquivos:
-- [`helloworld/main.cpp`](../helloworld/main.cpp) — GLFW + GLEW, OpenGL 3.3 core, VAO/VBO, shaders inline.
-- [`helloworld/SConscript`](../helloworld/SConscript) — alvo de build (Linux + Windows).
+Files:
+- [`helloworld/main.cpp`](../helloworld/main.cpp) — GLFW + GLEW, OpenGL 3.3 core, VAO/VBO, inline shaders.
+- [`helloworld/SConscript`](../helloworld/SConscript) — build target (Linux + Windows).
 
 ---
 
-## Passo a passo
+## Step by step
 
-### 1. Teste do display + GPU (Linux, dentro do container)
+### 1. Display + GPU test (Linux, inside the container)
 ```bash
 scons target=linux
 ./build/linux/helloworld
 ```
-**Esperado:**
-- Uma janela `OpenGL Hello Triangle` abre **no seu desktop Windows** (via WSLg) com um
-  triângulo de vértices vermelho/verde/azul sobre fundo escuro.
-- No terminal, as linhas:
+**Expected:**
+- An `OpenGL Hello Triangle` window opens **on your Windows desktop** (via WSLg) with a
+  triangle whose vertices are red/green/blue on a dark background.
+- In the terminal, the lines:
   ```
   GL_VENDOR   : ...
-  GL_RENDERER : <sua GPU>        <- deve ser sua GPU, NAO "llvmpipe"
+  GL_RENDERER : <your GPU>       <- should be your GPU, NOT "llvmpipe"
   GL_VERSION  : ...
   ```
-- `ESC` fecha a janela.
+- `ESC` closes the window.
 
-Se o `GL_RENDERER` mostrar `llvmpipe` ou a janela não abrir, veja a seção de
-Troubleshooting em [SETUP.md](SETUP.md).
+If `GL_RENDERER` shows `llvmpipe` or the window does not open, see the Troubleshooting
+section in [SETUP.md](SETUP.md).
 
-### 2. Teste do cross-compile (Windows, fora do container)
+### 2. Cross-compile test (Windows, outside the container)
 ```bash
 scons target=windows
 ```
-Isso gera `build/windows/helloworld.exe`. Como o workspace é bind-montado no caminho do
-Windows, o arquivo aparece em:
+This produces `build/windows/helloworld.exe`. Since the workspace is bind-mounted at the
+Windows path, the file shows up at:
 
 ```
 ...\The_Cherno_OpenGL_Introduction\build\windows\helloworld.exe
 ```
 
-Abra uma **segunda janela** no Windows (Explorer ou outra janela do VS Code no host) e
-execute o `.exe` diretamente. Deve abrir a mesma janela do triângulo, agora como
-aplicação **nativa do Windows** (sem container).
+Open a **second window** on Windows (Explorer or another VS Code window on the host) and
+run the `.exe` directly. It should open the same triangle window, now as a **native
+Windows** application (no container).
 
 ---
 
-## O que cada teste confirma
+## What each test confirms
 
-| Teste | Confirma |
+| Test | Confirms |
 |---|---|
-| `build/linux/helloworld` abre a janela | devcontainer + GPU + WSLg + GLFW/GLEW Linux OK |
-| `GL_RENDERER` = GPU real (não llvmpipe) | GPU do host compartilhada corretamente |
-| `build/windows/helloworld.exe` roda no Windows | cross-compile MinGW + GLFW/GLEW Windows OK |
-| `.exe` visível no Explorer do Windows | bind do workspace OK |
+| `build/linux/helloworld` opens the window | devcontainer + GPU + WSLg + Linux GLFW/GLEW OK |
+| `GL_RENDERER` = real GPU (not llvmpipe) | host GPU shared correctly |
+| `build/windows/helloworld.exe` runs on Windows | MinGW cross-compile + Windows GLFW/GLEW OK |
+| `.exe` visible in Windows Explorer | workspace bind OK |

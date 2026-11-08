@@ -43,7 +43,7 @@ build/
 Build/
 build-*/
 
-# Clone temporario do GLFW na raiz (verificacao local; o build real e em /opt/glfw no container)
+# Temporary GLFW clone at the repo root (local verification; the real build is in /opt/glfw in the container)
 /glfw/
 
 # SCons

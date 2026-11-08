@@ -1,57 +1,57 @@
 # The_Cherno_OpenGL_Introduction
 
-Projeto para acompanhar o tutorial de **OpenGL** do [The Cherno](https://www.youtube.com/playlist?list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2),
-usando **GLFW** + **GLEW**. O desenvolvimento acontece num **devcontainer** (Debian 13),
-com build **multiplataforma** (Linux + Windows) e renderização OpenGL acelerada por GPU
-exibida direto no Windows via WSLg.
+Project to follow [The Cherno](https://www.youtube.com/playlist?list=PLlrATfBNZ98foTJPJ_Ev03o2oq3-GGOS2)'s
+**OpenGL** tutorial, using **GLFW** + **GLEW**. Development happens in a **devcontainer**
+(Debian 13), with a **cross-platform** build (Linux + Windows) and GPU-accelerated OpenGL
+rendering shown directly on Windows via WSLg.
 
 ---
 
-## Ambiente de desenvolvimento
+## Development environment
 
-O desenvolvimento é feito dentro de um devcontainer. O container compila para Linux
-(execução dentro do container, janela no Windows via WSLg) e faz cross-compile de um
-`.exe` para Windows (execução nativa, fora do container).
+Development is done inside a devcontainer. The container builds for Linux (runs inside the
+container, window on Windows via WSLg) and cross-compiles a `.exe` for Windows (runs
+natively, outside the container).
 
-### Componentes e versões
+### Components and versions
 
-| Componente | Versão / detalhe |
+| Component | Version / detail |
 |---|---|
-| SO do container | Debian **13 (trixie)** |
-| Usuário do container | **root** |
+| Container OS | Debian **13 (trixie)** |
+| Container user | **root** |
 | OpenGL | **3.3 core** |
-| GLFW | **compilado do fonte** no container (upstream `master` ≈ 3.6-dev; configurável via `GLFW_REF`) |
-| GLEW | **2.2.0** (Linux via `libglew-dev`; Windows compilado do fonte) |
-| Compilador Linux | `g++` (trixie) |
-| Cross-compile Windows | **MinGW-w64** (`x86_64-w64-mingw32-g++`) |
+| GLFW | **built from source** in the container (upstream `master` ≈ 3.6-dev; configurable via `GLFW_REF`) |
+| GLEW | **2.2.0** (Linux via `libglew-dev`; Windows built from source) |
+| Linux compiler | `g++` (trixie) |
+| Windows cross-compile | **MinGW-w64** (`x86_64-w64-mingw32-g++`) |
 | Build system | **SCons** |
-| GPU / OpenGL driver | **Mesa** (driver `d3d12`, via WSL `/dev/dxg`) |
+| GPU / OpenGL driver | **Mesa** (`d3d12` driver, via WSL `/dev/dxg`) |
 
-### Dependências do host (Windows)
+### Host dependencies (Windows)
 
-- **Windows 11** com **WSL2** (`wsl --update`) e driver de GPU instalado no Windows
-  (NVIDIA / AMD / Intel — a detecção é automática, onboard ou offboard).
-- **Podman** instalado dentro do WSL2.
-- **VS Code** + extensão **Dev Containers** (defina `"dev.containers.dockerPath": "podman"`).
+- **Windows 11** with **WSL2** (`wsl --update`) and a GPU driver installed on Windows
+  (NVIDIA / AMD / Intel — detection is automatic, onboard or offboard).
+- **Podman** installed inside WSL2.
+- **VS Code** + the **Dev Containers** extension (set `"dev.containers.dockerPath": "podman"`).
 
-### Compilar (resumo)
+### Build (summary)
 
 ```bash
 scons                    # Linux + Windows (debug)
 scons target=linux       # -> build/linux/helloworld
 scons target=windows     # -> build/windows/helloworld.exe
-scons mode=release       # otimizado
+scons mode=release       # optimized
 ```
 
-### Documentação
+### Documentation
 
-- **[.doc/SETUP.md](.doc/SETUP.md)** — pré-requisitos, como abrir no devcontainer, como a
-  GPU/renderização chega ao Windows, como compilar e como debugar a janela.
-- **[.doc/HELLOWORLD.md](.doc/HELLOWORLD.md)** — triângulo de teste ([`helloworld/`](helloworld/))
-  para validar o setup, a GPU e o stream de tela.
+- **[.doc/SETUP.md](.doc/SETUP.md)** — prerequisites, how to open in the devcontainer, how
+  the GPU/rendering reaches Windows, how to build, and how to debug the window.
+- **[.doc/HELLOWORLD.md](.doc/HELLOWORLD.md)** — test triangle ([`helloworld/`](helloworld/))
+  to validate the setup, the GPU, and the screen stream.
 
 ---
 
-## Licença
+## License
 
-Ver [LICENSE](LICENSE).
+See [LICENSE](LICENSE).

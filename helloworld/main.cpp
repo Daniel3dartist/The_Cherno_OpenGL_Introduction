@@ -1,7 +1,7 @@
 // =============================================================================
-// Hello World do OpenGL: um triangulo colorido.
-// Serve para validar o setup do devcontainer, a GPU acelerada e o stream de tela
-// (WSLg) para o Windows. GLFW + GLEW, OpenGL 3.3 core, VAO/VBO, shaders inline.
+// OpenGL hello world: a colored triangle.
+// Validates the devcontainer setup, GPU acceleration, and the screen stream
+// (WSLg) to Windows. GLFW + GLEW, OpenGL 3.3 core, VAO/VBO, inline shaders.
 // =============================================================================
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -28,9 +28,9 @@ void main() {
 }
 )";
 
-// --- Utilitarios -------------------------------------------------------------
+// --- Helpers -----------------------------------------------------------------
 static void glfwErrorCallback(int code, const char* desc) {
-    std::fprintf(stderr, "[GLFW] erro %d: %s\n", code, desc);
+    std::fprintf(stderr, "[GLFW] error %d: %s\n", code, desc);
 }
 
 static void framebufferSizeCallback(GLFWwindow*, int width, int height) {
@@ -47,7 +47,7 @@ static GLuint compileShader(GLenum type, const char* src) {
     if (ok != GL_TRUE) {
         char log[1024];
         glGetShaderInfoLog(shader, sizeof(log), nullptr, log);
-        std::fprintf(stderr, "[GL] falha ao compilar shader: %s\n", log);
+        std::fprintf(stderr, "[GL] shader compilation failed: %s\n", log);
     }
     return shader;
 }
@@ -66,7 +66,7 @@ static GLuint buildProgram() {
     if (ok != GL_TRUE) {
         char log[1024];
         glGetProgramInfoLog(program, sizeof(log), nullptr, log);
-        std::fprintf(stderr, "[GL] falha ao linkar programa: %s\n", log);
+        std::fprintf(stderr, "[GL] program linking failed: %s\n", log);
     }
 
     glDeleteShader(vs);
@@ -78,7 +78,7 @@ int main() {
     glfwSetErrorCallback(glfwErrorCallback);
 
     if (!glfwInit()) {
-        std::fprintf(stderr, "Falha ao inicializar o GLFW\n");
+        std::fprintf(stderr, "Failed to initialize GLFW\n");
         return EXIT_FAILURE;
     }
 
@@ -92,7 +92,7 @@ int main() {
 
     GLFWwindow* window = glfwCreateWindow(800, 600, "OpenGL Hello Triangle", nullptr, nullptr);
     if (!window) {
-        std::fprintf(stderr, "Falha ao criar a janela GLFW\n");
+        std::fprintf(stderr, "Failed to create the GLFW window\n");
         glfwTerminate();
         return EXIT_FAILURE;
     }
@@ -100,25 +100,25 @@ int main() {
     glfwSwapInterval(1);  // vsync
     glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
 
-    // GLEW precisa de contexto corrente. experimental = compat com core profile.
+    // GLEW needs a current context. experimental = compatible with core profile.
     glewExperimental = GL_TRUE;
     GLenum glewErr = glewInit();
     if (glewErr != GLEW_OK) {
-        std::fprintf(stderr, "Falha ao inicializar o GLEW: %s\n",
+        std::fprintf(stderr, "Failed to initialize GLEW: %s\n",
                      glewGetErrorString(glewErr));
         glfwDestroyWindow(window);
         glfwTerminate();
         return EXIT_FAILURE;
     }
 
-    // Confirma qual GPU/driver foi selecionado (host via WSL, nao llvmpipe).
+    // Confirm which GPU/driver was selected (host via WSL, not llvmpipe).
     std::printf("GL_VENDOR   : %s\n", glGetString(GL_VENDOR));
     std::printf("GL_RENDERER : %s\n", glGetString(GL_RENDERER));
     std::printf("GL_VERSION  : %s\n", glGetString(GL_VERSION));
 
-    // Geometria: 3 vertices com posicao (xyz) + cor (rgb).
+    // Geometry: 3 vertices with position (xyz) + color (rgb).
     const float vertices[] = {
-        //   posicao           cor
+        //   position          color
         -0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,
          0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,
          0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f,
@@ -132,11 +132,11 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    // location 0: posicao
+    // location 0: position
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
                           (void*)0);
     glEnableVertexAttribArray(0);
-    // location 1: cor
+    // location 1: color
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float),
                           (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
@@ -146,7 +146,7 @@ int main() {
 
     GLuint program = buildProgram();
 
-    // Loop de renderizacao
+    // Render loop
     while (!glfwWindowShouldClose(window)) {
         if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
             glfwSetWindowShouldClose(window, GL_TRUE);

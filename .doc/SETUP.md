@@ -1,120 +1,120 @@
-# Setup & Compilação
+# Setup & Build
 
-Guia para montar o ambiente, compilar (Linux + Windows) e abrir a renderização OpenGL
-de dentro do container no Windows para debugar a janela.
+Guide to set up the environment, build (Linux + Windows), and open the OpenGL
+rendering from inside the container on Windows to debug the window.
 
 ---
 
-## 1. Pré-requisitos no host (Windows)
+## 1. Host prerequisites (Windows)
 
-| Componente | Observação |
+| Component | Notes |
 |---|---|
-| Windows 11 | com **WSL2** habilitado (`wsl --update`) |
-| Distro WSL2 | qualquer (ex. Ubuntu/Debian) — fornece o **WSLg** e `/dev/dxg` |
-| Driver de GPU | driver do fabricante instalado **no Windows** (NVIDIA/AMD/Intel). É ele que o WSL compartilha |
-| Podman | instalado **dentro do WSL2** |
-| VS Code | com a extensão **Dev Containers** (`ms-vscode-remote.remote-containers`) |
+| Windows 11 | with **WSL2** enabled (`wsl --update`) |
+| WSL2 distro | any (e.g. Ubuntu/Debian) — provides **WSLg** and `/dev/dxg` |
+| GPU driver | vendor driver installed **on Windows** (NVIDIA/AMD/Intel). This is what WSL shares |
+| Podman | installed **inside WSL2** |
+| VS Code | with the **Dev Containers** extension (`ms-vscode-remote.remote-containers`) |
 
-### Fazer o VS Code usar o Podman
-Nas *Settings* do VS Code (lado WSL / Remote), defina:
+### Make VS Code use Podman
+In the VS Code *Settings* (WSL / Remote side), set:
 
 ```jsonc
 "dev.containers.dockerPath": "podman"
 ```
 
-> O container roda como **root** (requisito do projeto). Em Podman *rootless*, o root do
-> container é mapeado para o seu usuário do WSL — suficiente para acessar `/dev/dxg`
-> (normalmente `0666`) e escrever no bind do workspace. Se o device não aparecer, rode
-> o Podman *rootful* (`sudo podman ...`) ou ajuste as permissões de `/dev/dxg`.
+> The container runs as **root** (project requirement). With *rootless* Podman, the
+> container root is mapped to your WSL user — enough to access `/dev/dxg`
+> (usually `0666`) and write to the workspace bind. If the device is missing, run
+> Podman *rootful* (`sudo podman ...`) or adjust the `/dev/dxg` permissions.
 
 ---
 
-## 2. Abrir no devcontainer
+## 2. Open in the devcontainer
 
-1. Clone o projeto no Windows (ex. `C:\Users\<voce>\Documents\projects\The_Cherno_OpenGL_Introduction`).
-2. Abra a pasta no VS Code.
+1. Clone the project on Windows (e.g. `C:\Users\<you>\Documents\projects\The_Cherno_OpenGL_Introduction`).
+2. Open the folder in VS Code.
 3. `F1` → **Dev Containers: Reopen in Container**.
-4. A primeira criação **compila o GLFW do fonte** (Linux + Windows) — demora um pouco,
-   mas vira camada cacheada; recriações reaproveitam.
+4. The first creation **builds GLFW from source** (Linux + Windows) — it takes a while,
+   but becomes a cached layer; recreations reuse it.
 
-### Bind do workspace
-O [devcontainer.json](../.devcontainer/devcontainer.json) monta o caminho local do
-Windows (via WSL2) em `/workspace`:
+### Workspace bind
+The [devcontainer.json](../.devcontainer/devcontainer.json) mounts the local workspace
+folder into `/workspace`:
 
 ```jsonc
 "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
 "workspaceFolder": "/workspace"
 ```
 
-## 3. GPU e renderização no Windows (como funciona)
+## 3. GPU and rendering on Windows (how it works)
 
-Em Windows + WSL2 **não existe** GPU "sem virtualização nenhuma": o caminho real é a GPU
-do host **compartilhada pela camada de compute do WSL** (GPU-PV) — **sem** passthrough
-dedicado e **sem** software render. É o que o devcontainer configura:
+On Windows + WSL2 there is **no** GPU "with zero virtualization": the real path is the
+host GPU **shared through the WSL compute layer** (GPU-PV) — **no** dedicated passthrough
+and **no** software render. That is what the devcontainer configures:
 
-- `--device=/dev/dxg` → acesso à GPU do host.
-- mount `/usr/lib/wsl` + `LD_LIBRARY_PATH=/usr/lib/wsl/lib` → loader da GPU do WSL.
-- **Mesa** com o driver **d3d12** → traduz OpenGL para a GPU via D3D12. Por isso funciona
-  com **qualquer fabricante** (NVIDIA/AMD/Intel) e **qualquer GPU** (onboard ou offboard):
-  a detecção é automática, não há nada fixo para a RTX 5060.
-- mounts de `/mnt/wslg` + `/tmp/.X11-unix` e `DISPLAY=:0` → o **WSLg** exibe a janela
-  direto no Windows (sem X server extra tipo VcXsrv).
+- `--device=/dev/dxg` → access to the host GPU.
+- mount `/usr/lib/wsl` + `LD_LIBRARY_PATH=/usr/lib/wsl/lib` → the WSL GPU loader.
+- **Mesa** with the **d3d12** driver → translates OpenGL to the GPU via D3D12. That is why
+  it works with **any vendor** (NVIDIA/AMD/Intel) and **any GPU** (onboard or offboard):
+  detection is automatic, nothing is hardcoded for the RTX 5060.
+- mounts for `/mnt/wslg` + `/tmp/.X11-unix` and `DISPLAY=:0` → **WSLg** shows the window
+  directly on Windows (no extra X server like VcXsrv).
 
-### Validar a GPU e o display
-Dentro do container:
+### Validate the GPU and the display
+Inside the container:
 
 ```bash
-glxinfo -B      # "OpenGL renderer string" deve mostrar sua GPU (ex. NVIDIA ...),
-                # e NAO "llvmpipe" (que seria software render)
-glxgears        # deve abrir uma janela com engrenagens no seu desktop Windows
+glxinfo -B      # "OpenGL renderer string" should show your GPU (e.g. NVIDIA ...),
+                # and NOT "llvmpipe" (which would be software render)
+glxgears        # should open a window with gears on your Windows desktop
 ```
 
-Se aparecer `llvmpipe`: faltou `/dev/dxg`, o mount `/usr/lib/wsl` ou o `LD_LIBRARY_PATH`
-— confira o [devcontainer.json](../.devcontainer/devcontainer.json).
-Se nenhuma janela abrir: confira `DISPLAY=:0` e os mounts do WSLg.
+If you see `llvmpipe`: `/dev/dxg`, the `/usr/lib/wsl` mount, or `LD_LIBRARY_PATH` is
+missing — check the [devcontainer.json](../.devcontainer/devcontainer.json).
+If no window opens: check `DISPLAY=:0` and the WSLg mounts.
 
 ---
 
-## 4. Compilar (SCons)
+## 4. Build (SCons)
 
-| Comando | Resultado |
+| Command | Result |
 |---|---|
-| `scons` | compila Linux **e** Windows (debug) |
-| `scons target=linux` | só Linux → `build/linux/helloworld` |
-| `scons target=windows` | só Windows → `build/windows/helloworld.exe` |
-| `scons mode=release` | otimizado (`-O2`) |
-| `scons -c` | limpa os artefatos |
+| `scons` | builds Linux **and** Windows (debug) |
+| `scons target=linux` | Linux only → `build/linux/helloworld` |
+| `scons target=windows` | Windows only → `build/windows/helloworld.exe` |
+| `scons mode=release` | optimized (`-O2`) |
+| `scons -c` | cleans the artifacts |
 
-- **Linux:** linka o GLFW instalado em `/usr/local` + GLEW/GL via `pkg-config` (estático).
-- **Windows:** cross-compile com `x86_64-w64-mingw32-g++`, GLFW de
-  `/opt/glfw/build-windows`, GLEW compilado do fonte (`glew.c`, `GLEW_STATIC`).
-  O `.exe` é **self-contained** (`-static`), sem depender de DLLs.
+- **Linux:** links GLFW installed in `/usr/local` + GLEW/GL via `pkg-config` (static).
+- **Windows:** cross-compiled with `x86_64-w64-mingw32-g++`, GLFW from
+  `/opt/glfw/build-windows`, GLEW compiled from source (`glew.c`, `GLEW_STATIC`).
+  The `.exe` is **self-contained** (`-static`), with no DLL dependencies.
 
 ---
 
-## 5. Rodar
+## 5. Run
 
-### Linux (dentro do container, janela no Windows via WSLg)
+### Linux (inside the container, window on Windows via WSLg)
 ```bash
 scons target=linux
 ./build/linux/helloworld
 ```
 
-### Windows (fora do container)
-O `build/windows/helloworld.exe` está no bind do workspace, então aparece no Windows em
-`...\The_Cherno_OpenGL_Introduction\build\windows\`. Abra numa **segunda janela** (Explorer
-ou outra janela do VS Code no Windows) e execute diretamente.
+### Windows (outside the container)
+`build/windows/helloworld.exe` lives in the workspace bind, so it shows up on Windows at
+`...\The_Cherno_OpenGL_Introduction\build\windows\`. Open it in a **second window**
+(Explorer or another VS Code window on Windows) and run it directly.
 
 ---
 
-## 6. Usar um fork customizado do GLFW
-O container clona o GLFW na criação. Para apontar para o seu fork, edite os `build.args`
-em [devcontainer.json](../.devcontainer/devcontainer.json) e recrie o container:
+## 6. Use a custom GLFW fork
+The container clones GLFW at creation time. To point it at your fork, edit the `build.args`
+in [devcontainer.json](../.devcontainer/devcontainer.json) and rebuild the container:
 
 ```jsonc
 "args": {
-  "GLFW_REPO": "https://github.com/<voce>/glfw.git",
-  "GLFW_REF": "minha-branch"   // ou uma tag, ex. "3.4"
+  "GLFW_REPO": "https://github.com/<you>/glfw.git",
+  "GLFW_REF": "my-branch"   // or a tag, e.g. "3.4"
 }
 ```
 
@@ -122,10 +122,10 @@ em [devcontainer.json](../.devcontainer/devcontainer.json) e recrie o container:
 
 ## 7. Troubleshooting
 
-| Sintoma | Causa provável / solução |
+| Symptom | Likely cause / fix |
 |---|---|
-| `glxinfo` mostra `llvmpipe` | faltou `/dev/dxg`, `/usr/lib/wsl` ou `LD_LIBRARY_PATH` |
-| Janela não abre | `DISPLAY` incorreto ou mounts do WSLg ausentes |
-| `permission denied` em `/dev/dxg` | Podman rootless sem acesso — rode rootful ou ajuste permissões |
-| Build lento / I/O lento | o workspace é bind 9p (`/mnt/c`); o build do GLFW fica em `/opt` (rápido) |
-| `pkg-config: glfw3 not found` | a imagem não concluiu o `cmake --install` do GLFW — rebuild do container |
+| `glxinfo` shows `llvmpipe` | missing `/dev/dxg`, `/usr/lib/wsl`, or `LD_LIBRARY_PATH` |
+| Window does not open | wrong `DISPLAY` or missing WSLg mounts |
+| `permission denied` on `/dev/dxg` | rootless Podman without access — run rootful or fix permissions |
+| Slow build / slow I/O | the workspace is a 9p bind (`/mnt/c`); the GLFW build lives in `/opt` (fast) |
+| `pkg-config: glfw3 not found` | the image did not finish the GLFW `cmake --install` — rebuild the container |

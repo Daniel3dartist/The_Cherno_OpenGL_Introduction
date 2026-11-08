@@ -1,0 +1,61 @@
+{
+  // OpenGL (GLFW + GLEW) development devcontainer on Debian 13 (trixie).
+  // Runtime: Podman inside WSL2. Host GPU via /dev/dxg + WSLg. User: root.
+  "name": "opengl-glfw-dev",
+
+  // build.args make it easy to swap GLFW for a fork without editing the Dockerfile.
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": "..",
+    "args": {
+      "GLFW_REPO": "https://github.com/glfw/glfw.git",
+      "GLFW_REF": "master"
+    }
+  },
+	"features": {
+		"ghcr.io/devcontainers/features/common-utils:1": {
+			"installZsh": true,
+			"configureZshAsDefaultShell": true,
+			"upgradePackages": true
+		}
+	},
+  // Container user = root (project requirement).
+  "remoteUser": "root",
+  "containerUser": "root",
+
+
+  "workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
+  "workspaceFolder": "/workspace",
+
+  // Real host GPU shared through the WSL compute layer (no dedicated passthrough,
+  // no software render). Any GPU (NVIDIA/AMD/Intel, onboard/offboard).
+  "runArgs": [
+    "--device=/dev/dxg"
+  ],
+
+  // WSL libs (GPU loader) + WSLg sockets (display on Windows).
+  "mounts": [
+    "source=/usr/lib/wsl,target=/usr/lib/wsl,type=bind",
+    "source=/mnt/wslg,target=/mnt/wslg,type=bind",
+    "source=/mnt/wslg/.X11-unix,target=/tmp/.X11-unix,type=bind",
+    "source=${localEnv:USERPROFILE}/.ssh/devcontainer-keys,target=/root/.ssh/,type=bind"
+  ],
+
+  // Display (WSLg) + path to the WSL GPU libs.
+  "containerEnv": {
+    "DISPLAY": ":0",
+    "WAYLAND_DISPLAY": "wayland-0",
+    "XDG_RUNTIME_DIR": "/mnt/wslg/runtime-dir",
+    "PULSE_SERVER": "/mnt/wslg/PulseServer",
+    "LD_LIBRARY_PATH": "/usr/lib/wsl/lib"
+  },
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-vscode.cpptools",
+        "llvm-vs-code-extensions.vscode-clangd"
+      ]
+    }
+  }
+}

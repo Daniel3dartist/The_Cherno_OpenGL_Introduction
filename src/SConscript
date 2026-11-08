@@ -21,12 +21,16 @@ def objects(env, platform):
     ]
 
 
+programs = {"linux": None, "windows": None}
+
 # --- Linux -------------------------------------------------------------------
 if build_linux and env_linux is not None:
     e = env_linux.Clone()
-    e.Program(target="#build/linux/%s" % APP, source=objects(e, "linux"))
+    programs["linux"] = e.Program(target="#build/linux/%s" % APP, source=objects(e, "linux"))
 
 # --- Windows (cross-compile) -------------------------------------------------
 if build_windows and env_windows is not None:
     e = env_windows.Clone()
-    e.Program(target="#build/windows/%s" % APP, source=objects(e, "windows"))  # .exe via PROGSUFFIX
+    programs["windows"] = e.Program(target="#build/windows/%s" % APP, source=objects(e, "windows"))  # .exe via PROGSUFFIX
+
+Return("programs")

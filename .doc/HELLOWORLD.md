@@ -9,7 +9,8 @@ The [`helloworld/`](../helloworld/) directory contains the OpenGL "hello world":
 
 Files:
 - [`helloworld/main.cpp`](../helloworld/main.cpp) — GLFW + GLEW, OpenGL 3.3 core, VAO/VBO, inline shaders.
-- [`helloworld/SConscript`](../helloworld/SConscript) — build target (Linux + Windows).
+- [`helloworld/SConscript`](../helloworld/SConscript) — build target (Linux + Windows). Only
+  built when `--helloworld` is passed; a plain `scons` builds the app in `src/`.
 
 ---
 
@@ -17,8 +18,7 @@ Files:
 
 ### 1. Display + GPU test (Linux, inside the container)
 ```bash
-scons target=linux
-./build/linux/helloworld
+scons target=linux --helloworld -r     # build + run (or: ./build/linux/helloworld)
 ```
 **Expected:**
 - An `OpenGL Hello Triangle` window opens **on your Windows desktop** (via WSLg) with a
@@ -36,7 +36,7 @@ section in [SETUP.md](SETUP.md).
 
 ### 2. Cross-compile test (Windows, outside the container)
 ```bash
-scons target=windows
+scons target=windows --helloworld
 ```
 This produces `build/windows/helloworld.exe`. Since the workspace is bind-mounted at the
 Windows path, the file shows up at:

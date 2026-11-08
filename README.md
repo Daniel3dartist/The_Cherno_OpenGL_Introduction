@@ -59,11 +59,18 @@ software rendering (`llvmpipe`) with no window.
 ### Build (summary)
 
 ```bash
-scons                    # Linux + Windows (debug)
-scons target=linux       # -> build/linux/helloworld
-scons target=windows     # -> build/windows/helloworld.exe
-scons mode=release       # optimized
+scons help                         # list every command / option (same as scons -h)
+scons                              # app for Linux + Windows (debug)
+scons target=linux                 # -> build/linux/app
+scons target=windows               # -> build/windows/app.exe
+scons mode=release                 # optimized
+scons target=linux --helloworld    # only the helloworld test -> build/linux/helloworld
+scons target=linux -r              # build, then run (-r or --run, works with --helloworld too)
 ```
+
+`-r` / `--run` runs the Linux binary inside the container. The window still appears on
+your Windows desktop when the container runs on WSL2. A `.exe` is not run there: you get a
+warning to use `target=linux`, and you run the `.exe` on Windows yourself.
 
 ### Documentation
 

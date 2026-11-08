@@ -86,11 +86,28 @@ If no window opens: check `DISPLAY=:0` and the WSLg mounts.
 
 | Command | Result |
 |---|---|
-| `scons` | builds Linux **and** Windows (debug) |
-| `scons target=linux` | Linux only → `build/linux/helloworld` |
-| `scons target=windows` | Windows only → `build/windows/helloworld.exe` |
+| `scons help` | lists every command, variable and option (same as `scons -h`) |
+| `scons` | builds the app for Linux **and** Windows (debug) |
+| `scons target=linux` | Linux only → `build/linux/app` |
+| `scons target=windows` | Windows only → `build/windows/app.exe` |
 | `scons mode=release` | optimized (`-O2`) |
-| `scons -c` | cleans the artifacts |
+| `scons --helloworld` | builds **only** the helloworld test instead of the app |
+| `scons -r` / `scons --run` | after the build, runs the binary for the current OS |
+| `scons -c` | cleans the artifacts (app **and** helloworld) |
+
+Options combine, e.g. `scons target=linux --helloworld -r`. An unknown command, option or
+variable (or an invalid `target=`/`mode=` value) stops the build with an error that points
+to `scons help`.
+
+About `-r` / `--run`:
+- Inside the container the OS is Linux, so it runs `build/linux/<app>`. With
+  `target=all` (default) both are built, but only the Linux binary runs.
+- With `target=windows` nothing runs: SCons prints a warning that a `.exe` can't run on
+  Linux and suggests `target=linux`. If the container is on a Windows host (WSL2), the
+  Linux build already opens its window on the Windows desktop. The `.exe` is meant for
+  developing directly on Windows or for a final Windows build.
+- SCons itself prints `Warning: the -r option is not yet implemented` because `-r` is a
+  legacy option name it reserves. Ignore it, or use `--run` to avoid it.
 
 - **Linux:** links GLFW installed in `/usr/local` + GLEW/GL via `pkg-config` (static).
 - **Windows:** cross-compiled with `x86_64-w64-mingw32-g++`, GLFW from
@@ -103,12 +120,12 @@ If no window opens: check `DISPLAY=:0` and the WSLg mounts.
 
 ### Linux (inside the container, window on Windows via WSLg)
 ```bash
-scons target=linux
-./build/linux/helloworld
+scons target=linux -r                 # app
+scons target=linux --helloworld -r    # helloworld test
 ```
 
 ### Windows (outside the container)
-`build/windows/helloworld.exe` lives in the workspace bind, so it shows up on Windows at
+`build/windows/app.exe` (or `helloworld.exe` with `--helloworld`) lives in the workspace bind, so it shows up on Windows at
 `...\The_Cherno_OpenGL_Introduction\build\windows\`. Open it in a **second window**
 (Explorer or another VS Code window on Windows) and run it directly.
 

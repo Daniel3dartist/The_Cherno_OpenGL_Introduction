@@ -7,11 +7,13 @@ Import("env_linux", "env_windows", "build_linux", "build_windows")
 APP = "helloworld"
 src = "main.cpp"
 
+programs = {"linux": None, "windows": None}
+
 # --- Linux -------------------------------------------------------------------
 if build_linux and env_linux is not None:
     e = env_linux.Clone()
     obj = e.Object(target="#build/linux/obj/%s/main.o" % APP, source=src)
-    e.Program(
+    programs["linux"] = e.Program(
         target="#build/linux/%s" % APP,
         source=obj,
     )
@@ -20,7 +22,9 @@ if build_linux and env_linux is not None:
 if build_windows and env_windows is not None:
     e = env_windows.Clone()
     obj = e.Object(target="#build/windows/obj/%s/main.o" % APP, source=src)
-    e.Program(
+    programs["windows"] = e.Program(
         target="#build/windows/%s" % APP,  # PROGSUFFIX appends .exe
         source=obj,
     )
+
+Return("programs")

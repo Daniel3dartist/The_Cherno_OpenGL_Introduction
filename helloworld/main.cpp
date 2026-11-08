@@ -77,6 +77,14 @@ static GLuint buildProgram() {
 int main() {
     glfwSetErrorCallback(glfwErrorCallback);
 
+    // Force the X11 backend on Linux: GLEW 2.2 loads functions through GLX and
+    // fails on Wayland/EGL contexts (glewInit -> GLEW_ERROR_NO_GLX_DISPLAY).
+    // Works on both hosts (WSLg and Linux desktops provide X11/XWayland).
+    // No effect on Windows (Win32 backend).
+#if defined(__linux__)
+    glfwInitHint(GLFW_PLATFORM, GLFW_PLATFORM_X11);
+#endif
+
     if (!glfwInit()) {
         std::fprintf(stderr, "Failed to initialize GLFW\n");
         return EXIT_FAILURE;

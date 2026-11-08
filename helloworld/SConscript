@@ -7,23 +7,24 @@ Import("env_linux", "env_windows", "build_linux", "build_windows")
 APP = "helloworld"
 src = "main.cpp"
 
+programs = {"linux": None, "windows": None}
+
 # --- Linux -------------------------------------------------------------------
 if build_linux and env_linux is not None:
     e = env_linux.Clone()
-    e.Program(
+    obj = e.Object(target="#build/linux/obj/%s/main.o" % APP, source=src)
+    programs["linux"] = e.Program(
         target="#build/linux/%s" % APP,
-        source=[src],
+        source=obj,
     )
 
 # --- Windows (cross-compile) -------------------------------------------------
 if build_windows and env_windows is not None:
     e = env_windows.Clone()
-    # Compile the app + GLEW's amalgamated source (glew.c) into the same binary.
-    glew_obj = e.Object(
-        target="#build/windows/glew.o",
-        source=e["GLEW_C"],
-    )
-    e.Program(
+    obj = e.Object(target="#build/windows/obj/%s/main.o" % APP, source=src)
+    programs["windows"] = e.Program(
         target="#build/windows/%s" % APP,  # PROGSUFFIX appends .exe
-        source=[src, glew_obj],
+        source=obj,
     )
+
+Return("programs")

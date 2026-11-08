@@ -1,0 +1,46 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      // Linux debug build (also refreshes compile_commands.json for clangd).
+      "label": "scons: linux debug",
+      "type": "shell",
+      "command": "scons -j$(nproc) target=linux mode=debug",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "scons: linux release",
+      "type": "shell",
+      "command": "scons -j$(nproc) target=linux mode=release",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      // Windows .exe (cross-compile). Runs outside the container.
+      "label": "scons: windows release",
+      "type": "shell",
+      "command": "scons -j$(nproc) target=windows mode=release",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "scons: all (linux + windows, debug)",
+      "type": "shell",
+      "command": "scons -j$(nproc)",
+      "options": { "cwd": "${workspaceFolder}" },
+      "group": "build",
+      "problemMatcher": ["$gcc"]
+    },
+    {
+      "label": "scons: clean",
+      "type": "shell",
+      "command": "scons -c",
+      "options": { "cwd": "${workspaceFolder}" },
+      "problemMatcher": []
+    }
+  ]
+}

@@ -73,3 +73,8 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Static dependencies (GLFW/GLEW for linux + windows) are versioned with the
+# project: re-include them despite the *.a / *.lib rules above.
+dependencies/
+

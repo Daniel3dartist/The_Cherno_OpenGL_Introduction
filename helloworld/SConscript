@@ -10,20 +10,17 @@ src = "main.cpp"
 # --- Linux -------------------------------------------------------------------
 if build_linux and env_linux is not None:
     e = env_linux.Clone()
+    obj = e.Object(target="#build/linux/obj/%s/main.o" % APP, source=src)
     e.Program(
         target="#build/linux/%s" % APP,
-        source=[src],
+        source=obj,
     )
 
 # --- Windows (cross-compile) -------------------------------------------------
 if build_windows and env_windows is not None:
     e = env_windows.Clone()
-    # Compile the app + GLEW's amalgamated source (glew.c) into the same binary.
-    glew_obj = e.Object(
-        target="#build/windows/glew.o",
-        source=e["GLEW_C"],
-    )
+    obj = e.Object(target="#build/windows/obj/%s/main.o" % APP, source=src)
     e.Program(
         target="#build/windows/%s" % APP,  # PROGSUFFIX appends .exe
-        source=[src, glew_obj],
+        source=obj,
     )

@@ -13,6 +13,8 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     # Native (Linux) build + tooling
     build-essential g++ gdb pkg-config scons git cmake ca-certificates curl unzip \
+    # Language server for the vscode-clangd extension (autocomplete / go-to-definition)
+    clangd \
     # OpenGL headers/loader (Linux). GLFW and GLEW are NOT from apt: both are built
     # from source below as static libraries.
     libgl1-mesa-dev libglu1-mesa-dev \
